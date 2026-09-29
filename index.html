@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍔 FastFood Restaurant Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    :root {
+      --primary: #E63946;
+      --secondary: #FFB703;
+      --accent: #1D3557;
+      --light: #F1FAEE;
+      --success: #2A9D8F;
+      --warning: #FF9F1C;
+      --danger: #E63946;
+    }
+
+    body {
+      background: linear-gradient(135deg, #F1FAEE 0%, #A8DADC 100%);
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    .game-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ===== HEADER / STATS ===== */
+    .header {
+      background: var(--accent);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      opacity: 0.8;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .money { color: var(--secondary); }
+    .satisfaction { color: var(--success); }
+
+    /* ===== CUSTOMER AREA ===== */
+    .customer-area {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      min-height: 180px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .customer-queue {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+
+    .customer-card {
+      min-width: 220px;
+      background: var(--light);
+      border-radius: 12px;
+      padding: 15px;
+      border-left: 4px solid var(--primary);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .customer-card.waiting { border-left-color: var(--warning); }
+    .customer-card.ready { border-left-color: var(--success); background: #E8F8F5; }
+    .customer-card.impatient { border-left-color: var(--danger); animation: shake 0.5s infinite; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+
+    .customer-emoji { font-size: 32px; }
+    .customer-name { font-weight: 600; margin: 5px 0; }
+    .patience-bar {
+      height: 6px;
+      background: #ddd;
+      border-radius: 3px;
+      margin: 8px 0;
+      overflow: hidden;
+    }
+    .patience-fill {
+      height: 100%;
+      background: var(--success);
+      width: 100%;
+      transition: width 1s linear, background 0.3s;
+    }
+    .order-items { font-size: 12px; margin-top: 8px; line-height: 1.5; }
+    .order-item { display: flex; justify-content: space-between; padding: 2px 0; }
+
+    /* ===== KITCHEN / MENU ===== */
+    .kitchen {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    @media (max-width: 768px) {
+      .kitchen { grid-template-columns: 1fr; }
+    }
+
+    .menu-panel, .plate-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .food-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 8px;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .food-btn:hover {
+      border-color: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    .food-btn .emoji { font-size: 28px; }
+    .food-btn .name { font-size: 10px; text-align: center; margin-top: 4px; }
+    .food-btn .price { font-size: 9px; color: var(--success); font-weight: 600; margin-top: 2px; }
+
+    .category-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 15px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid #eee;
+    }
+
+    /* ===== PLATE / ORDER BUILDER ===== */
+    .plate {
+      min-height: 150px;
+      border: 3px dashed #ddd;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .plate.has-items { border-color: var(--success); background: #FAFFFA; }
+
+    .plate-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: var(--light);
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .remove-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .plate-total {
+      text-align: right;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-serve {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-serve:hover { background: #21867C; }
+    .btn-serve:disabled { background: #ccc; cursor: not-allowed; }
+
+    .btn-clear {
+      background: #eee;
+      color: #666;
+    }
+
+    .btn-clear:hover { background: #ddd; }
+
+    /* ===== OPTIONS (Chicken) ===== */
+    .options-row {
+      display: flex;
+      gap: 10px;
+      margin: 8px 0 15px;
+      flex-wrap: wrap;
+    }
+
+    .option-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      background: #f5f5f5;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+
+    /* ===== MESSAGE / FEEDBACK ===== */
+    .message {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .message.show { opacity: 1; }
+    .message.success { background: var(--success); }
+    .message.error { background: var(--danger); }
+
+    .empty-plate {
+      text-align: center;
+      color: #aaa;
+      padding: 30px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <!-- Header / Stats -->
+    <div class="header">
+      <div class="stat">
+        <div class="stat-label">💰 Money</div>
+        <div class="stat-value money" id="money">₱0.00</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">😊 Satisfaction</div>
+        <div class="stat-value satisfaction" id="satisfaction">100%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">✅ Served</div>
+        <div class="stat-value" id="served">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">⏳ Waiting</div>
+        <div class="stat-value" id="waiting">0</div>
+      </div>
+    </div>
+
+    <!-- Customers Area -->
+    <div class="customer-area">
+      <div class="section-title">
+        👥 Customers
+        <button style="font-size:12px; padding:4px 10px; background:var(--secondary); border:none; border-radius:6px; cursor:pointer; font-weight:600;" onclick="addCustomer()">+ Add Customer</button>
+      </div>
+      <div class="customer-queue" id="customer-queue">
+        <p style="color:#aaa; width:100%; text-align:center; padding:20px;">Waiting for customers...</p>
+      </div>
+    </div>
+
+    <!-- Kitchen Area -->
+    <div class="kitchen">
+      <!-- Menu Panel -->
+      <div class="menu-panel">
+        <div class="section-title">🍽️ Menu — Click to Add to Plate</div>
+        
+        <!-- Burgers -->
+        <div class="category-title">🍔 Burgers</div>
+        <div class="menu-grid">
+          <button class="food-btn" onclick="addToPlate('Classic Burger', '🍔', 85)">
+            <span class="emoji">🍔</span>
+            <span class="name">Classic</span>
+            <span class="price">₱85</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Cheese Burger', '🧀🍔', 95)">
+            <span class="emoji">🧀🍔</span>
+            <span class="name">Cheese</span>
+            <span class="price">₱95</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Double Burger', '🍔🍔', 120)">
+            <span class="emoji">🍔🍔</span>
+            <span class="name">Double</span>
+            <span class="price">₱120</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Bacon Burger', '🥓🍔', 135)">
+            <span class="emoji">🥓🍔</span>
+            <span class="name">Bacon</span>
+            <span class="price">₱135</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Supreme Burger', '👑🍔', 150)">
+            <span class="emoji">👑🍔</span>
+            <span class="name">Supreme</span>
+            <span class="price">₱150</span>
+          </button>
+        </div>
+
+        <!-- Pizza -->
+        <div class="category-title">🍕 Pizza</div>
+        <div class="menu-grid">
+          <button class="food-btn" onclick="addToPlate('Cheese Pizza', '🍕', 190)">
+            <span class="emoji">🍕</span>
+            <span class="name">Cheese</span>
+            <span class="price">₱190</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Pepperoni Pizza', '🌶️🍕', 210)">
+            <span class="emoji">🌶️🍕</span>
+            <span class="name">Pepperoni</span>
+            <span class="price">₱210</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Hawaiian Pizza', '🍍🍕', 220)">
+            <span class="emoji">🍍🍕</span>
+            <span class="name">Hawaiian</span>
+            <span class="price">₱220</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Meat Lovers Pizza', '🥩🍕', 250)">
+            <span class="emoji">🥩🍕</span>
+            <span class="name">Meat Lovers</span>
+            <span class="price">₱250</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Veggie Pizza', '🥦🍕', 200)">
+            <span class="emoji">🥦🍕</span>
+            <span class="name">Veggie</span>
+            <span class="price">₱200</span>
+          </button>
+        </div>
+
+        <!-- Chicken -->
+        <div class="category-title">🍗 Chicken</div>
+        <div class="options-row">
+          <label class="option-checkbox">
+            <input type="checkbox" id="opt-rice"> + Rice (+₱20) 🍚
+          </label>
+          <label class="option-checkbox">
+            <input type="checkbox" id="opt-drink"> + Drink (+₱15) 🥤
+          </label>
+        </div>
+        <div class="menu-grid">
+          <button class="food-btn" onclick="addChickenToPlate('1pc Chicken')">
+            <span class="emoji">🍗</span>
+            <span class="name">1pc Chicken</span>
+            <span class="price">₱70+</span>
+          </button>
+          <button class="food-btn" onclick="addChickenToPlate('2pc Chicken')">
+            <span class="emoji">🍗🍗</span>
+            <span class="name">2pc Chicken</span>
+            <span class="price">₱110+</span>
+          </button>
+          <button class="food-btn" onclick="addChickenToPlate('3pc Chicken')">
+            <span class="emoji">🍗🍗🍗</span>
+            <span class="name">3pc Chicken</span>
+            <span class="price">₱150+</span>
+          </button>
+          <button class="food-btn" onclick="addChickenToPlate('Chicken Burger Steak')">
+            <span class="emoji">🍔</span>
+            <span class="name">Burger Steak</span>
+            <span class="price">₱95+</span>
+          </button>
+          <button class="food-btn" onclick="addChickenToPlate('Chicken Wings')">
+            <span class="emoji">🔥🍗</span>
+            <span class="name">Wings (6pc)</span>
+            <span class="price">₱130+</span>
+          </button>
+        </div>
+
+        <!-- Fries -->
+        <div class="category-title">🍟 Fries</div>
+        <div class="menu-grid">
+          <button class="food-btn" onclick="addToPlate('Small Fries', '🍟', 45)">
+            <span class="emoji">🍟</span>
+            <span class="name">Small</span>
+            <span class="price">₱45</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Medium Fries', '🍟', 65)">
+            <span class="emoji">🍟</span>
+            <span class="name">Medium</span>
+            <span class="price">₱65</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Large Fries', '🍟', 85)">
+            <span class="emoji">🍟</span>
+            <span class="name">Large</span>
+            <span class="price">₱85</span>
+          </button>
+        </div>
+
+        <!-- Ice Cream -->
+        <div class="category-title">🍦 Ice Cream</div>
+        <div class="menu-grid">
+          <button class="food-btn" onclick="addToPlate('Vanilla Ice Cream', '🍦', 40)">
+            <span class="emoji">🍦</span>
+            <span class="name">Vanilla</span>
+            <span class="price">₱40</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Chocolate Ice Cream', '🍫🍦', 45)">
+            <span class="emoji">🍫🍦</span>
+            <span class="name">Chocolate</span>
+            <span class="price">₱45</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Strawberry Ice Cream', '🍓🍦', 45)">
+            <span class="emoji">🍓🍦</span>
+            <span class="name">Strawberry</span>
+            <span class="price">₱45</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Mango Ice Cream', '🥭🍦', 50)">
+            <span class="emoji">🥭🍦</span>
+            <span class="name">Mango</span>
+            <span class="price">₱50</span>
+          </button>
+          <button class="food-btn" onclick="addToPlate('Cookies & Cream Ice Cream', '🍪🍦', 50)">
+            <span class="emoji">🍪🍦</span>
+            <span class="name">Cookies & Cream</span>
+            <span class="price">₱50</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Plate Panel -->
+      <div class="plate-panel">
+        <div class="section-title">🍽️ Your Order — Plate</div>
+        <div class="plate" id="plate">
+          <div class="empty-plate" id="empty-msg">Click items from the menu to add them here</div>
+        </div>
+        <div class="plate-total" id="plate-total">Total: ₱0.00</div>
+        <div class="action-buttons">
+          <button class="btn btn-clear" onclick="clearPlate()">🗑️ Clear</button>
+          <button class="btn btn-serve" id="serve-btn" onclick="serveOrder()" disabled>🛎️ Serve to Customer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Toast -->
+  <div class="message" id="message"></div>
+
+  <script>
+    // ========== GAME STATE ==========
+    let money = 0;
+    let satisfaction = 100;
+    let servedCount = 0;
+    let customers = [];
+    let plateItems = [];
+    let selectedCustomerId = null;
+
+    // Base prices
+    const basePrices = {
+      '1pc Chicken': 70,
+      '2pc Chicken': 110,
+      '3pc Chicken': 150,
+      'Chicken Burger Steak': 95,
+      'Chicken Wings': 130
+    };
+
+    const customerNames = ['Alex', 'Sarah', 'Mark', 'Jenny', 'John', 'Lisa', 'Mike', 'Anna', 'Jay', 'Mae', 'Sam', 'Joy'];
+    const customerEmojis = ['🙂', '😊', '😐', '🙂', '😃', '😄', '😁', '🙋', '🧑', '👨', '👩', '👧', '👦'];
+
+    // Order templates
+    const menuItems = [
+      // Burgers
+      { name: 'Classic Burger', price: 85 },
+      { name: 'Cheese Burger', price: 95 },
+      { name: 'Double Burger', price: 120 },
+      { name: 'Bacon Burger', price: 135 },
+      { name: 'Supreme Burger', price: 150 },
+      // Pizza
+      { name: 'Cheese Pizza', price: 190 },
+      { name: 'Pepperoni Pizza', price: 210 },
+      { name: 'Hawaiian Pizza', price: 220 },
+      { name: 'Meat Lovers Pizza', price: 250 },
+      { name: 'Veggie Pizza', price: 200 },
+      // Chicken
+      { name: '1pc Chicken', price: 70, hasOptions: true },
+      { name: '2pc Chicken', price: 110, hasOptions: true },
+      { name: '3pc Chicken', price: 150, hasOptions: true },
+      { name: 'Chicken Burger Steak', price: 95, hasOptions: true },
+      { name: 'Chicken Wings', price: 130, hasOptions: true },
+      // Fries
+      { name: 'Small Fries', price: 45 },
+      { name: 'Medium Fries', price: 65 },
+      { name: 'Large Fries', price: 85 },
+      // Ice Cream
+      { name: 'Vanilla Ice Cream', price: 40 },
+      { name: 'Chocolate Ice Cream', price: 45 },
+      { name: 'Strawberry Ice Cream', price: 45 },
+      { name: 'Mango Ice Cream', price: 50 },
+      { name: 'Cookies & Cream Ice Cream', price: 50 }
+    ];
+
+    // ========== CUSTOMER GENERATION ==========
+    function generateOrder() {
+      const order = [];
+      const numItems = Math.floor(Math.random() * 3) + 1; // 1-3 items
+
+      for (let i = 0; i < numItems; i++) {
+        const catRoll = Math.random();
+        let categoryItems;
+
+        if (catRoll < 0.25) {
+          categoryItems = menuItems.filter(i => i.name.includes('Burger'));
+        } else if (catRoll < 0.45) {
+          categoryItems = menuItems.filter(i => i.name.includes('Pizza'));
+        } else if (catRoll < 0.65) {
+          categoryItems = menuItems.filter(i => i.hasOptions);
+        } else if (catRoll < 0.8) {
+          categoryItems = menuItems.filter(i => i.name.includes('Fries'));
+        } else {
+          categoryItems = menuItems.filter(i => i.name.includes('Ice Cream'));
+        }
+
+        const item = categoryItems[Math.floor(Math.random() * categoryItems.length)];
+        const orderItem = { ...item };
+
+        // Random options for chicken
+        if (item.hasOptions) {
+          orderItem.withRice = Math.random() > 0.5;
+          orderItem.withDrink = Math.random() > 0.5;
+          orderItem.finalPrice = item.price + (orderItem.withRice ? 20 : 0) + (orderItem.withDrink ? 15 : 0);
+        } else {
+          orderItem.finalPrice = item.price;
+        }
+
+        order.push(orderItem);
+      }
+
+      return order;
+    }
+
+    function addCustomer() {
+      const id = Date.now();
+      const name = customerNames[Math.floor(Math.random() * customerNames.length)];
+      const emoji = customerEmojis[Math.floor(Math.random() * customerEmojis.length)];
+      const order = generateOrder();
+      const totalPrice = order.reduce((sum, i) => sum + i.finalPrice, 0);
+
+      const customer = {
+        id,
+        name,
+        emoji,
+        order,
+        totalPrice,
+        patience: 100,
+        arrivedAt: Date.now()
+      };
+
+      customers.push(customer);
+      renderCustomers();
+      showMessage(`${name} entered the restaurant!`, 'success');
+    }
+
+    // ========== RENDER CUSTOMERS ==========
+    function renderCustomers() {
+      const container = document.getElementById('customer-queue');
+      
+      if (customers.length === 0) {
+        container.innerHTML = '<p style="color:#aaa; width:100%; text-align:center; padding:20px;">Waiting for customers...</p>';
+        updateStats();
+        return;
+      }
+
+      container.innerHTML = customers.map(c => {
+        const patiencePercent = c.patience;
+        let statusClass = 'waiting';
+        if (patiencePercent < 30) statusClass = 'impatient';
+        else if (patiencePercent < 60) statusClass = 'waiting';
+
+        const patienceColor = patiencePercent > 60 ? '#2A9D8F' : patiencePercent > 30 ? '#FF9F1C' : '#E63946';
+
+        const orderList = c.order.map(item => {
+          let label = item.name;
+          if (item.hasOptions) {
+            const opts = [];
+            if (item.withRice) opts.push('🍚+Rice');
+            if (item.withDrink) opts.push('🥤+Drink');
+            if (opts.length) label += ` (${opts.join(', ')})`;
+          }
+          return `<div class="order-item"><span>${label}</span><span>₱${item.finalPrice}</span></div>`;
+        }).join('');
+
+        const isSelected = selectedCustomerId === c.id ? 'style="box-shadow:0 0 0 3px var(--secondary);"' : '';
+
+        return `
+          <div class="customer-card ${statusClass}" ${isSelected} onclick="selectCustomer(${c.id})">
+            <div class="customer-emoji">${c.emoji}</div>
+            <div class="customer-name">${c.name}</div>
+            <div class="patience-bar">
+              <div class="patience-fill" style="width:${patiencePercent}%; background:${patienceColor};"></div>
+            </div>
+            <div class="order-items">
+              ${orderList}
+              <div class="order-item" style="font-weight:700; margin-top:6px; border-top:1px solid #ddd; padding-top:6px;">
+                <span>TOTAL</span><span>₱${c.totalPrice}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      updateStats();
+    }
+
+    function selectCustomer(id) {
+      selectedCustomerId = id;
+      renderCustomers();
+      showMessage('Order selected — prepare matching items!', 'success');
+    }
+
+    // ========== PLATE MANAGEMENT ==========
+    function addToPlate(name, emoji, price) {
+      plateItems.push({ name, emoji, price, id: Date.now() + Math.random() });
+      renderPlate();
+    }
+
+    function addChickenToPlate(baseName) {
+      const addRice = document.getElementById('opt-rice').checked;
+      const addDrink = document.getElementById('opt-drink').checked;
+      let finalPrice = basePrices[baseName];
+      let label = baseName;
+      let extras = [];
+
+      if (addRice) { finalPrice += 20; extras.push('+Rice'); }
+      if (addDrink) { finalPrice += 15; extras.push('+Drink'); }
+      if (extras.length) label += ` (${extras.join(', ')})`;
+
+      plateItems.push({
+        name: label,
+        emoji: '🍗',
+        price: finalPrice,
+        id: Date.now() + Math.random()
+      });
+
+      renderPlate();
+      // Reset checkboxes
+      document.getElementById('opt-rice').checked = false;
+      document.getElementById('opt-drink').checked = false;
+    }
+
+    function removeFromPlate(id) {
+      plateItems = plateItems.filter(i => i.id !== id);
+      renderPlate();
+    }
+
+    function clearPlate() {
+      plateItems = [];
+      selectedCustomerId = null;
+      renderPlate();
+      renderCustomers();
+    }
+
+    function renderPlate() {
+      const plate = document.getElementById('plate');
+      const totalEl = document.getElementById('plate-total');
+      const serveBtn = document.getElementById('serve-btn');
+      const total = plateItems.reduce((sum, i) => sum + i.price, 0);
+
+      if (plateItems.length === 0) {
+        plate.innerHTML = '<div class="empty-plate" id="empty-msg">Click items from the menu to add them here</div>';
+        plate.classList.remove('has-items');
+        serveBtn.disabled = true;
+      } else {
+        plate.classList.add('has-items');
+        plate.innerHTML = plateItems.map(item => `
+          <div class="plate-item">
+            <span>${item.emoji} ${item.name}</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span>₱${item.price}</span>
+              <button class="remove-btn" onclick="removeFromPlate(${item.id})">×</button>
+            </div>
+          </div>
+        `).join('');
+        serveBtn.disabled = !selectedCustomerId;
+      }
+
+      totalEl.textContent = `Total: ₱${total.toFixed(2)}`;
+    }
+
+    // ========== SERVE LOGIC ==========
+    function serveOrder() {
+      if (!selectedCustomerId || plateItems.length === 0) {
+        showMessage('Select a customer first & prepare their order!', 'error');
+        return;
+      }
+
+      const customer = customers.find(c => c.id === selectedCustomerId);
+      if (!customer) return;
+
+      const plateTotal = plateItems.reduce((sum, i) => sum + i.price, 0);
+      const orderTotal = customer.totalPrice;
+
+      // Simple match check: compare item names ignoring extras
+      const plateNames = plateItems.map(i => i.name.replace(/\s\(.+\)/, '').trim());
+      const orderNames = customer.order.map(i => {
+        let base = i.name;
+        if (i.hasOptions) base = base.replace(/\s\(.+\)/, '');
+        return base;
+      });
+
+      // Sort and compare
+      const match = JSON.stringify([...plateNames].sort()) === JSON.stringify([...orderNames].sort());
+
+      if (!match) {
+        showMessage('❌ Order does NOT match! Check the customer\'s order.', 'error');
+        satisfaction = Math.max(0, satisfaction - 5);
+        updateStats();
+        return;
+      }
+
+      // Payment & reward
+      const tip = customer.patience > 70 ? 0.1 * orderTotal : customer.patience > 40 ? 0.05 * orderTotal : 0;
+      const earned = orderTotal + tip;
+      money += earned;
+      servedCount++;
+
+      // Satisfaction boost
+      satisfaction = Math.min(100, satisfaction + (customer.patience > 70 ? 5 : 2));
+
+      // Remove customer
+      customers = customers.filter(c => c.id !== selectedCustomerId);
+
+      showMessage(`✅ Served! +₱${earned.toFixed(2)} ${tip > 0 ? '(incl. tip!)' : ''}`, 'success');
+
+      // Reset
+      clearPlate();
+      updateStats();
+    }
+
+    // ========== SYSTEM ==========
+    function updateStats() {
+      document.getElementById('money').textContent = `₱${money.toFixed(2)}`;
+      document.getElementById('satisfaction').textContent = `${satisfaction}%`;
+      document.getElementById('served').textContent = servedCount;
+      document.getElementById('waiting').textContent = customers.length;
+    }
+
+    function showMessage(text, type = '') {
+      const el = document.getElementById('message');
+      el.textContent = text;
+      el.className = 'message show ' + type;
+      setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    // Patience decay loop
+    setInterval(() => {
+      if (customers.length === 0) return;
+      customers.forEach(c => {
+        const waitTime = (Date.now() - c.arrivedAt) / 1000;
+        c.patience = Math.max(0, 100 - waitTime / 3);
+      });
+      renderCustomers();
+
+      // Auto-remove fully impatient customers
+      const left = customers.filter(c => c.patience <= 0);
+      if (left.length > 0) {
+        left.forEach(c => showMessage(`😢 ${c.name} left impatiently!`, 'error'));
+        satisfaction = Math.max(0, satisfaction - left.length * 10);
+      }
+      customers = customers.filter(c => c.patience > 0);
+      renderCustomers();
+    }, 1000);
+
+    // Auto-spawn customers
+    setInterval(() => {
+      if (customers.length < 4 && Math.random() > 0.6) {
+        addCustomer();
+      }
+    }, 8000);
+
+    // Initial welcome
+    window.onload = () => {
+      showMessage('🍔 Welcome! Click "+ Add Customer" to start!', 'success');
+    };
+  </script>
+</body>
+</html>
