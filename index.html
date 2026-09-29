@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🍔 FastFood Restaurant Game</title>
+  <title>🍔 FastFood Restaurant — Cooking Game</title>
   <style>
     * {
       margin: 0;
@@ -21,6 +21,8 @@
       --danger: #E63946;
       --floor: #F5E6D3;
       --door: #8B4513;
+      --grill: #444;
+      --plate-bg: #FFF8E7;
     }
     body {
       background: linear-gradient(135deg, #F1FAEE 0%, #A8DADC 100%);
@@ -45,21 +47,12 @@
       gap: 10px;
       margin-bottom: 15px;
     }
-    .stat {
-      text-align: center;
-    }
-    .stat-label {
-      font-size: 11px;
-      opacity: 0.8;
-      text-transform: uppercase;
-    }
-    .stat-value {
-      font-size: 20px;
-      font-weight: 700;
-    }
+    .stat { text-align: center; }
+    .stat-label { font-size: 11px; opacity: 0.8; text-transform: uppercase; }
+    .stat-value { font-size: 20px; font-weight: 700; }
     .money { color: var(--secondary); }
     .satisfaction { color: var(--success); }
-    /* ===== RESTAURANT FLOOR / WALKING AREA ===== */
+    /* ===== RESTAURANT / CUSTOMER AREA ===== */
     .restaurant-scene {
       background: var(--floor);
       border-radius: 12px;
@@ -67,274 +60,138 @@
       margin-bottom: 15px;
       box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
       position: relative;
-      min-height: 280px;
+      min-height: 220px;
       overflow: hidden;
     }
     .door {
       position: absolute;
-      top: 20px;
-      left: 20px;
-      width: 60px;
-      height: 90px;
+      top: 20px; left: 20px;
+      width: 60px; height: 90px;
       background: var(--door);
       border-radius: 4px 4px 0 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       font-size: 24px;
       box-shadow: inset -4px 0 8px rgba(0,0,0,0.3);
     }
     .door::after {
-      content: '';
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      width: 8px;
-      height: 8px;
-      background: var(--secondary);
-      border-radius: 50%;
+      content: ''; position: absolute; right: 8px; top: 50%;
+      width: 8px; height: 8px; background: var(--secondary); border-radius: 50%;
     }
     .queue-zone {
-      position: absolute;
-      top: 130px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
+      position: absolute; top: 110px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap;
+      justify-content: center; width: 85%;
     }
     .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
+      font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 10px;
+      display: flex; justify-content: space-between; align-items: center;
     }
     /* ===== WALKING CUSTOMER ===== */
     .walking-customer {
-      position: absolute;
-      font-size: 36px;
-      transition: all 0.8s ease-in-out;
-      z-index: 10;
+      position: absolute; font-size: 36px; transition: all 0.8s ease-in-out; z-index: 10;
       filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
     }
-    .walking-customer.walking {
-      animation: walk 0.3s infinite alternate;
-    }
+    .walking-customer.walking { animation: walk 0.3s infinite alternate; }
     @keyframes walk {
       0% { transform: translateY(0) rotate(-3deg); }
       100% { transform: translateY(-4px) rotate(3deg); }
     }
-    .walking-customer.leaving {
-      animation: walkAway 0.8s ease-in forwards;
-    }
-    @keyframes walkAway {
-      0% { opacity: 1; }
-      100% { transform: translateX(-150px); opacity: 0; }
-    }
     /* ===== CUSTOMER CARD ===== */
     .customer-card {
-      min-width: 200px;
-      background: white;
-      border-radius: 12px;
-      padding: 12px;
-      border: 3px solid transparent;
-      transition: all 0.3s ease;
-      cursor: pointer;
+      min-width: 180px; background: white; border-radius: 12px; padding: 12px;
+      border: 3px solid transparent; transition: all 0.3s ease; cursor: pointer;
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
-    .customer-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    }
-    .customer-card.selected {
-      border-color: var(--secondary);
-      box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.3);
-    }
-    .customer-card.waiting { border-left-color: var(--warning); }
+    .customer-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+    .customer-card.selected { border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(255,183,3,0.3); }
     .customer-card.impatient { border-left: 4px solid var(--danger); animation: shake 0.5s infinite; }
     @keyframes shake {
-      0%, 100% { transform: translateX(0); }
+      0%,100% { transform: translateX(0); }
       25% { transform: translateX(-3px); }
       75% { transform: translateX(3px); }
     }
     .card-emoji { font-size: 28px; }
     .customer-name { font-weight: 700; margin: 4px 0; font-size: 15px; }
-    .patience-bar {
-      height: 6px;
-      background: #eee;
-      border-radius: 3px;
-      margin: 6px 0;
-      overflow: hidden;
-    }
-    .patience-fill {
-      height: 100%;
-      width: 100%;
-      transition: width 1s linear, background 0.3s;
-      border-radius: 3px;
-    }
+    .patience-bar { height: 6px; background: #eee; border-radius: 3px; margin: 6px 0; overflow: hidden; }
+    .patience-fill { height: 100%; width: 100%; transition: width 1s linear, background 0.3s; border-radius: 3px; }
     .order-items { font-size: 11px; margin-top: 6px; line-height: 1.4; }
     .order-item { display: flex; justify-content: space-between; padding: 1px 0; }
-    /* ===== KITCHEN / MENU ===== */
-    .kitchen {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-    @media (max-width: 768px) {
-      .kitchen { grid-template-columns: 1fr; }
-    }
-    .menu-panel, .plate-panel {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
+    .empty-queue { color: #aaa; text-align: center; padding: 20px; font-size: 14px; }
+    /* ===== KITCHEN LAYOUT ===== */
+    .kitchen { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+    @media (max-width: 900px) { .kitchen { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .kitchen { grid-template-columns: 1fr; } }
+    .cooking-station, .prep-area, .serving-area {
+      background: white; border-radius: 12px; padding: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 10px;
+    /* ===== COOKING STATION ===== */
+    .station-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .cook-btn {
+      display: flex; flex-direction: column; align-items: center; padding: 12px 8px;
+      border: 2px solid #eee; border-radius: 10px; background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%);
+      cursor: pointer; transition: all 0.2s;
     }
-    .food-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 12px 8px;
-      border: 2px solid #eee;
-      border-radius: 10px;
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s;
+    .cook-btn:hover:not(:disabled) { border-color: var(--secondary); transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+    .cook-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .cook-btn .emoji { font-size: 28px; }
+    .cook-btn .name { font-size: 10px; text-align: center; margin-top: 4px; }
+    .cook-btn .cook-time { font-size: 9px; color: var(--warning); font-weight: 600; margin-top: 2px; }
+    .cooking-item {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      background: #fff3cd; border-radius: 8px; margin-bottom: 8px;
+      border-left: 3px solid var(--warning);
     }
-    .food-btn:hover {
-      border-color: var(--secondary);
-      transform: translateY(-2px);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    .cooking-progress {
+      flex: 1; height: 8px; background: #ffe8a3; border-radius: 4px; overflow: hidden;
     }
-    .food-btn .emoji { font-size: 28px; }
-    .food-btn .name { font-size: 10px; text-align: center; margin-top: 4px; }
-    .food-btn .price { font-size: 9px; color: var(--success); font-weight: 600; margin-top: 2px; }
-    .category-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent);
-      margin: 15px 0 8px;
-      padding-bottom: 4px;
-      border-bottom: 2px solid #eee;
+    .cook-fill { height: 100%; background: var(--secondary); width: 0%; transition: width 0.1s linear; }
+    .ready-item { border-left-color: var(--success); background: #d4edda; }
+    .ready-item .cook-fill { background: var(--success); }
+    /* ===== PREP AREA / PLATE ===== */
+    .prep-plate {
+      min-height: 120px; border: 3px dashed #ddd; border-radius: 12px; padding: 15px; margin-bottom: 15px;
+      background: var(--plate-bg); transition: all 0.3s;
     }
-    /* ===== PLATE / ORDER BUILDER ===== */
-    .plate {
-      min-height: 150px;
-      border: 3px dashed #ddd;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-      transition: all 0.3s;
-    }
-    .plate.has-items { border-color: var(--success); background: #FAFFFA; }
+    .prep-plate.has-items { border-color: var(--success); }
     .plate-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 10px;
-      background: var(--light);
-      border-radius: 6px;
-      margin-bottom: 6px;
+      display: flex; justify-content: space-between; align-items: center; padding: 8px 10px;
+      background: var(--light); border-radius: 6px; margin-bottom: 6px;
     }
     .remove-btn {
-      background: var(--danger);
-      color: white;
-      border: none;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: var(--danger); color: white; border: none; width: 24px; height: 24px;
+      border-radius: 50%; cursor: pointer; font-weight: 700; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .plate-total {
-      text-align: right;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-    }
+    .prep-total { text-align: right; font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+    .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn {
-      flex: 1;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
+      flex: 1; min-width: 100px; padding: 12px; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
     }
-    .btn-serve {
-      background: var(--success);
-      color: white;
-    }
+    .btn-serve { background: var(--success); color: white; }
     .btn-serve:hover { background: #21867C; }
     .btn-serve:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-clear {
-      background: #eee;
-      color: #666;
-    }
+    .btn-clear { background: #eee; color: #666; }
     .btn-clear:hover { background: #ddd; }
-    /* ===== OPTIONS (Chicken) ===== */
-    .options-row {
-      display: flex;
-      gap: 10px;
-      margin: 8px 0 15px;
-      flex-wrap: wrap;
-    }
+    .btn-add { background: var(--secondary); color: #222; }
+    .btn-add:hover { background: #ffc107; }
+    .empty-plate { text-align: center; color: #aaa; padding: 20px; font-size: 13px; }
+    /* ===== OPTIONS ===== */
+    .options-row { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; }
     .option-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      background: #f5f5f5;
-      padding: 6px 10px;
-      border-radius: 6px;
+      display: flex; align-items: center; gap: 4px; font-size: 11px;
+      background: #f5f5f5; padding: 5px 8px; border-radius: 6px;
     }
-    /* ===== MESSAGE / FEEDBACK ===== */
+    /* ===== MESSAGE ===== */
     .message {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--accent);
-      color: white;
-      padding: 12px 25px;
-      border-radius: 8px;
-      font-weight: 600;
-      z-index: 100;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: white; padding: 12px 25px; border-radius: 8px;
+      font-weight: 600; z-index: 100; opacity: 0; transition: opacity 0.3s; pointer-events: none;
     }
     .message.show { opacity: 1; }
     .message.success { background: var(--success); }
     .message.error { background: var(--danger); }
-    .empty-plate {
-      text-align: center;
-      color: #aaa;
-      padding: 30px;
-      font-size: 14px;
-    }
-    .empty-queue {
-      color: #aaa;
-      text-align: center;
-      padding: 20px;
-      font-size: 14px;
-    }
   </style>
 </head>
 <body>
@@ -359,7 +216,7 @@
       </div>
     </div>
 
-    <!-- Restaurant Scene with Walking Animation -->
+    <!-- Customers Area -->
     <div class="restaurant-scene" id="restaurant-scene">
       <div class="door">🚪</div>
       <div class="section-title" style="padding:0 10px;">
@@ -371,177 +228,111 @@
       </div>
     </div>
 
-    <!-- Kitchen Area -->
+    <!-- KITCHEN: 3 Columns -->
     <div class="kitchen">
-      <!-- Menu Panel -->
-      <div class="menu-panel">
-        <div class="section-title">🍽️ Menu — Click to Add to Plate</div>
-        
-        <!-- Burgers -->
-        <div class="category-title">🍔 Burgers</div>
-        <div class="menu-grid">
-          <button class="food-btn" onclick="addToPlate('Classic Burger', '🍔', 85)">
+      <!-- 1️⃣ COOKING STATION -->
+      <div class="cooking-station">
+        <div class="section-title">🔥 Cooking Station</div>
+        <div class="station-grid">
+          <button class="cook-btn" onclick="startCooking('Classic Burger', '🍔', 85, 3000)">
             <span class="emoji">🍔</span>
             <span class="name">Classic</span>
-            <span class="price">₱85</span>
+            <span class="cook-time">3s</span>
           </button>
-          <button class="food-btn" onclick="addToPlate('Cheese Burger', '🧀🍔', 95)">
+          <button class="cook-btn" onclick="startCooking('Cheese Burger', '🧀🍔', 95, 3500)">
             <span class="emoji">🧀🍔</span>
             <span class="name">Cheese</span>
-            <span class="price">₱95</span>
+            <span class="cook-time">3.5s</span>
           </button>
-          <button class="food-btn" onclick="addToPlate('Double Burger', '🍔🍔', 120)">
+          <button class="cook-btn" onclick="startCooking('Double Burger', '🍔🍔', 120, 4000)">
             <span class="emoji">🍔🍔</span>
             <span class="name">Double</span>
-            <span class="price">₱120</span>
+            <span class="cook-time">4s</span>
           </button>
-          <button class="food-btn" onclick="addToPlate('Bacon Burger', '🥓🍔', 135)">
+          <button class="cook-btn" onclick="startCooking('Bacon Burger', '🥓🍔', 135, 4500)">
             <span class="emoji">🥓🍔</span>
             <span class="name">Bacon</span>
-            <span class="price">₱135</span>
+            <span class="cook-time">4.5s</span>
           </button>
-          <button class="food-btn" onclick="addToPlate('Supreme Burger', '👑🍔', 150)">
+          <button class="cook-btn" onclick="startCooking('Supreme Burger', '👑🍔', 150, 5000)">
             <span class="emoji">👑🍔</span>
             <span class="name">Supreme</span>
-            <span class="price">₱150</span>
+            <span class="cook-time">5s</span>
           </button>
-        </div>
-
-        <!-- Pizza -->
-        <div class="category-title">🍕 Pizza</div>
-        <div class="menu-grid">
-          <button class="food-btn" onclick="addToPlate('Cheese Pizza', '🍕', 190)">
+          <button class="cook-btn" onclick="startCooking('Cheese Pizza', '🍕', 190, 6000)">
             <span class="emoji">🍕</span>
-            <span class="name">Cheese</span>
-            <span class="price">₱190</span>
+            <span class="name">Cheese Pizza</span>
+            <span class="cook-time">6s</span>
           </button>
-          <button class="food-btn" onclick="addToPlate('Pepperoni Pizza', '🌶️🍕', 210)">
-            <span class="emoji">🌶️🍕</span>
-            <span class="name">Pepperoni</span>
-            <span class="price">₱210</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Hawaiian Pizza', '🍍🍕', 220)">
-            <span class="emoji">🍍🍕</span>
-            <span class="name">Hawaiian</span>
-            <span class="price">₱220</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Meat Lovers Pizza', '🥩🍕', 250)">
-            <span class="emoji">🥩🍕</span>
-            <span class="name">Meat Lovers</span>
-            <span class="price">₱250</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Veggie Pizza', '🥦🍕', 200)">
-            <span class="emoji">🥦🍕</span>
-            <span class="name">Veggie</span>
-            <span class="price">₱200</span>
-          </button>
-        </div>
-
-        <!-- Chicken -->
-        <div class="category-title">🍗 Chicken</div>
-        <div class="options-row">
-          <label class="option-checkbox">
-            <input type="checkbox" id="opt-rice"> + Rice (+₱20) 🍚
-          </label>
-          <label class="option-checkbox">
-            <input type="checkbox" id="opt-drink"> + Drink (+₱15) 🥤
-          </label>
-        </div>
-        <div class="menu-grid">
-          <button class="food-btn" onclick="addChickenToPlate('1pc Chicken')">
-            <span class="emoji">🍗</span>
-            <span class="name">1pc Chicken</span>
-            <span class="price">₱70+</span>
-          </button>
-          <button class="food-btn" onclick="addChickenToPlate('2pc Chicken')">
+          <button class="cook-btn" onclick="startCooking('2pc Chicken', '🍗🍗', 110, 4000, true)">
             <span class="emoji">🍗🍗</span>
             <span class="name">2pc Chicken</span>
-            <span class="price">₱110+</span>
+            <span class="cook-time">4s</span>
           </button>
-          <button class="food-btn" onclick="addChickenToPlate('3pc Chicken')">
-            <span class="emoji">🍗🍗🍗</span>
-            <span class="name">3pc Chicken</span>
-            <span class="price">₱150+</span>
-          </button>
-          <button class="food-btn" onclick="addChickenToPlate('Chicken Burger Steak')">
-            <span class="emoji">🍔</span>
-            <span class="name">Burger Steak</span>
-            <span class="price">₱95+</span>
-          </button>
-          <button class="food-btn" onclick="addChickenToPlate('Chicken Wings')">
-            <span class="emoji">🔥🍗</span>
-            <span class="name">Wings (6pc)</span>
-            <span class="price">₱130+</span>
+          <button class="cook-btn" onclick="startCooking('Medium Fries', '🍟', 65, 2000)">
+            <span class="emoji">🍟</span>
+            <span class="name">Med Fries</span>
+            <span class="cook-time">2s</span>
           </button>
         </div>
 
-        <!-- Fries -->
-        <div class="category-title">🍟 Fries</div>
-        <div class="menu-grid">
-          <button class="food-btn" onclick="addToPlate('Small Fries', '🍟', 45)">
-            <span class="emoji">🍟</span>
-            <span class="name">Small</span>
-            <span class="price">₱45</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Medium Fries', '🍟', 65)">
-            <span class="emoji">🍟</span>
-            <span class="name">Medium</span>
-            <span class="price">₱65</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Large Fries', '🍟', 85)">
-            <span class="emoji">🍟</span>
-            <span class="name">Large</span>
-            <span class="price">₱85</span>
-          </button>
-        </div>
-
-        <!-- Ice Cream -->
-        <div class="category-title">🍦 Ice Cream</div>
-        <div class="menu-grid">
-          <button class="food-btn" onclick="addToPlate('Vanilla Ice Cream', '🍦', 40)">
-            <span class="emoji">🍦</span>
-            <span class="name">Vanilla</span>
-            <span class="price">₱40</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Chocolate Ice Cream', '🍫🍦', 45)">
-            <span class="emoji">🍫🍦</span>
-            <span class="name">Chocolate</span>
-            <span class="price">₱45</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Strawberry Ice Cream', '🍓🍦', 45)">
-            <span class="emoji">🍓🍦</span>
-            <span class="name">Strawberry</span>
-            <span class="price">₱45</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Mango Ice Cream', '🥭🍦', 50)">
-            <span class="emoji">🥭🍦</span>
-            <span class="name">Mango</span>
-            <span class="price">₱50</span>
-          </button>
-          <button class="food-btn" onclick="addToPlate('Cookies & Cream Ice Cream', '🍪🍦', 50)">
-            <span class="emoji">🍪🍦</span>
-            <span class="name">Cookies & Cream</span>
-            <span class="price">₱50</span>
-          </button>
+        <div style="margin-top:15px;">
+          <div style="font-weight:700; font-size:13px; color:var(--accent); margin-bottom:8px;">⏳ Cooking Now</div>
+          <div id="cooking-queue">
+            <p style="color:#aaa; font-size:12px; text-align:center; padding:10px;">Nothing cooking...</p>
+          </div>
         </div>
       </div>
 
-      <!-- Plate Panel -->
-      <div class="plate-panel">
-        <div class="section-title">🍽️ Your Order — Plate</div>
-        <div class="plate" id="plate">
-          <div class="empty-plate" id="empty-msg">Click items from the menu to add them here</div>
+      <!-- 2️⃣ PREP AREA -->
+      <div class="prep-area">
+        <div class="section-title">🍽️ Prep Plate — Drag or Click to Add</div>
+        
+        <div class="options-row">
+          <label class="option-checkbox">
+            <input type="checkbox" id="opt-rice"> +Rice (+₱20) 🍚
+          </label>
+          <label class="option-checkbox">
+            <input type="checkbox" id="opt-drink"> +Drink (+₱15) 🥤
+          </label>
         </div>
-        <div class="plate-total" id="plate-total">Total: ₱0.00</div>
+
+        <div id="ready-items" style="margin-bottom:10px;">
+          <div style="font-weight:700; font-size:13px; color:var(--success); margin-bottom:6px;">✅ Ready — Click to Plate</div>
+          <p style="color:#aaa; font-size:12px; text-align:center; padding:5px;">Cook something first</p>
+        </div>
+
+        <div class="prep-plate" id="prep-plate">
+          <div class="empty-plate">Ready items appear above — click to add here</div>
+        </div>
+
+        <div class="prep-total" id="prep-total">Total: ₱0.00</div>
         <div class="action-buttons">
           <button class="btn btn-clear" onclick="clearPlate()">🗑️ Clear</button>
-          <button class="btn btn-serve" id="serve-btn" onclick="serveOrder()" disabled>🛎️ Serve to Customer</button>
+          <button class="btn btn-serve" id="serve-btn" onclick="serveOrder()" disabled>🛎️ Serve</button>
+        </div>
+      </div>
+
+      <!-- 3️⃣ SERVING / ORDERS SUMMARY -->
+      <div class="serving-area">
+        <div class="section-title">📋 Selected Order</div>
+        <div id="selected-order" style="font-size:13px; line-height:1.6;">
+          <p style="color:#aaa; text-align:center; padding:20px;">Select a customer to see their order</p>
+        </div>
+        <div style="margin-top:20px;">
+          <div class="section-title">💡 Cooking Tips</div>
+          <ul style="font-size:11px; color:#555; line-height:1.8; margin-top:8px;">
+            <li>• Click food in <b>Cooking Station</b> to start cooking</li>
+            <li>• Wait for the timer to finish</li>
+            <li>• Click ready food to add to your plate</li>
+            <li>• Match the customer's order exactly</li>
+            <li>• Serve before patience runs out!</li>
+          </ul>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Message Toast -->
   <div class="message" id="message"></div>
 
   <script>
@@ -552,67 +343,32 @@
     let customers = [];
     let plateItems = [];
     let selectedCustomerId = null;
-
-    // Base prices
-    const basePrices = {
-      '1pc Chicken': 70,
-      '2pc Chicken': 110,
-      '3pc Chicken': 150,
-      'Chicken Burger Steak': 95,
-      'Chicken Wings': 130
-    };
+    let cookingItems = [];
+    let readyItems = [];
+    let cookIdCounter = 0;
 
     const customerNames = ['Alex', 'Sarah', 'Mark', 'Jenny', 'John', 'Lisa', 'Mike', 'Anna', 'Jay', 'Mae', 'Sam', 'Joy'];
-    const customerEmojis = ['🙂', '😊', '😐', '🙂', '😃', '😄', '😁', '🙋', '🧑', '👨', '👩', '👧', '👦', '🧑‍🦰', '👩‍🦱', '👨‍🦱'];
+    const customerEmojis = ['🙂', '😊', '😐', '🙂', '😃', '😄', '😁', '🙋', '🧑', '👨', '👩', '👧', '👦'];
 
-    // Order templates
-    const menuItems = [
-      { name: 'Classic Burger', price: 85 },
-      { name: 'Cheese Burger', price: 95 },
-      { name: 'Double Burger', price: 120 },
-      { name: 'Bacon Burger', price: 135 },
-      { name: 'Supreme Burger', price: 150 },
-      { name: 'Cheese Pizza', price: 190 },
-      { name: 'Pepperoni Pizza', price: 210 },
-      { name: 'Hawaiian Pizza', price: 220 },
-      { name: 'Meat Lovers Pizza', price: 250 },
-      { name: 'Veggie Pizza', price: 200 },
-      { name: '1pc Chicken', price: 70, hasOptions: true },
-      { name: '2pc Chicken', price: 110, hasOptions: true },
-      { name: '3pc Chicken', price: 150, hasOptions: true },
-      { name: 'Chicken Burger Steak', price: 95, hasOptions: true },
-      { name: 'Chicken Wings', price: 130, hasOptions: true },
-      { name: 'Small Fries', price: 45 },
-      { name: 'Medium Fries', price: 65 },
-      { name: 'Large Fries', price: 85 },
-      { name: 'Vanilla Ice Cream', price: 40 },
-      { name: 'Chocolate Ice Cream', price: 45 },
-      { name: 'Strawberry Ice Cream', price: 45 },
-      { name: 'Mango Ice Cream', price: 50 },
-      { name: 'Cookies & Cream Ice Cream', price: 50 }
+    // Menu for order generation
+    const menuTemplates = [
+      { name: 'Classic Burger', emoji: '🍔', price: 85, cookTime: 3000 },
+      { name: 'Cheese Burger', emoji: '🧀🍔', price: 95, cookTime: 3500 },
+      { name: 'Double Burger', emoji: '🍔🍔', price: 120, cookTime: 4000 },
+      { name: 'Bacon Burger', emoji: '🥓🍔', price: 135, cookTime: 4500 },
+      { name: 'Supreme Burger', emoji: '👑🍔', price: 150, cookTime: 5000 },
+      { name: 'Cheese Pizza', emoji: '🍕', price: 190, cookTime: 6000 },
+      { name: 'Medium Fries', emoji: '🍟', price: 65, cookTime: 2000 },
+      { name: '2pc Chicken', emoji: '🍗🍗', price: 110, cookTime: 4000, hasOptions: true },
     ];
 
-    // ========== CUSTOMER GENERATION ==========
+    // ========== ORDER GENERATION ==========
     function generateOrder() {
       const order = [];
-      const numItems = Math.floor(Math.random() * 3) + 1;
+      const numItems = Math.floor(Math.random() * 2) + 1; // 1-2 items for start
 
       for (let i = 0; i < numItems; i++) {
-        const catRoll = Math.random();
-        let categoryItems;
-        if (catRoll < 0.25) {
-          categoryItems = menuItems.filter(i => i.name.includes('Burger'));
-        } else if (catRoll < 0.45) {
-          categoryItems = menuItems.filter(i => i.name.includes('Pizza'));
-        } else if (catRoll < 0.65) {
-          categoryItems = menuItems.filter(i => i.hasOptions);
-        } else if (catRoll < 0.8) {
-          categoryItems = menuItems.filter(i => i.name.includes('Fries'));
-        } else {
-          categoryItems = menuItems.filter(i => i.name.includes('Ice Cream'));
-        }
-
-        const item = categoryItems[Math.floor(Math.random() * categoryItems.length)];
+        const item = menuTemplates[Math.floor(Math.random() * menuTemplates.length)];
         const orderItem = { ...item };
 
         if (item.hasOptions) {
@@ -627,11 +383,9 @@
       return order;
     }
 
-    // ========== WALKING ANIMATION ==========
+    // ========== CUSTOMER ANIMATION ==========
     function animateCustomerEnter(customer) {
       const scene = document.getElementById('restaurant-scene');
-      
-      // Create walking figure
       const walker = document.createElement('div');
       walker.className = 'walking-customer walking';
       walker.id = `walker-${customer.id}`;
@@ -640,12 +394,7 @@
       walker.style.top = '30px';
       scene.appendChild(walker);
 
-      // Animate entering
-      setTimeout(() => {
-        walker.style.left = '120px';
-      }, 50);
-
-      // After walk, remove walker and show card
+      setTimeout(() => { walker.style.left = '120px'; }, 50);
       setTimeout(() => {
         walker.classList.remove('walking');
         walker.style.opacity = '0';
@@ -654,12 +403,9 @@
       }, 1000);
     }
 
-    function animateCustomerLeave(customer, happy = true) {
-      const queueZone = document.getElementById('queue-zone');
-      
-      // Create leaving figure from card position
+    function animateCustomerLeave(happy = true) {
       const walker = document.createElement('div');
-      walker.className = `walking-customer ${happy ? '' : 'impatient'}`;
+      walker.className = 'walking-customer';
       walker.textContent = happy ? '😊👋' : '😤🏃';
       walker.style.right = '20px';
       walker.style.top = '30px';
@@ -670,7 +416,6 @@
         walker.style.transform = 'translateX(100px)';
         walker.style.opacity = '0';
       }, 100);
-
       setTimeout(() => walker.remove(), 1000);
     }
 
@@ -682,36 +427,27 @@
       const totalPrice = order.reduce((sum, i) => sum + i.finalPrice, 0);
 
       const customer = {
-        id,
-        name,
-        emoji,
-        order,
-        totalPrice,
-        patience: 100,
-        arrivedAt: Date.now()
+        id, name, emoji, order, totalPrice,
+        patience: 100, arrivedAt: Date.now()
       };
 
       customers.push(customer);
       animateCustomerEnter(customer);
-      showMessage(`${name} entered the restaurant!`, 'success');
+      showMessage(`${name} entered! Order: ${order.map(i => i.name).join(', ')}`, 'success');
     }
 
-    // ========== RENDER CUSTOMER CARDS ==========
+    // ========== RENDER CUSTOMERS ==========
     function renderCustomers() {
       const container = document.getElementById('queue-zone');
-      const emptyMsg = document.getElementById('empty-queue');
-
       if (customers.length === 0) {
-        container.innerHTML = '<p class="empty-queue">Waiting for customers to enter...</p>';
+        container.innerHTML = '<p class="empty-queue">Waiting for customers...</p>';
         updateStats();
         return;
       }
 
       container.innerHTML = customers.map(c => {
         const patiencePercent = Math.max(0, c.patience);
-        let statusClass = '';
-        if (patiencePercent < 30) statusClass = 'impatient';
-
+        const statusClass = patiencePercent < 30 ? 'impatient' : '';
         const patienceColor = patiencePercent > 60 ? '#2A9D8F' : patiencePercent > 30 ? '#FF9F1C' : '#E63946';
 
         const orderList = c.order.map(item => {
@@ -725,10 +461,10 @@
           return `<div class="order-item"><span>${label}</span><span>₱${item.finalPrice}</span></div>`;
         }).join('');
 
-        const isSelected = selectedCustomerId === c.id ? 'selected' : '';
+        const selectedClass = selectedCustomerId === c.id ? 'selected' : '';
 
         return `
-          <div class="customer-card ${statusClass} ${isSelected}" onclick="selectCustomer(${c.id})">
+          <div class="customer-card ${statusClass} ${selectedClass}" onclick="selectCustomer(${c.id})">
             <div class="card-emoji">${c.emoji}</div>
             <div class="customer-name">${c.name}</div>
             <div class="patience-bar">
@@ -750,58 +486,160 @@
     function selectCustomer(id) {
       selectedCustomerId = id;
       renderCustomers();
-      showMessage('Order selected — prepare matching items!', 'success');
+      renderSelectedOrder();
+      showMessage('Customer selected — cook their order!', 'success');
+    }
+
+    function renderSelectedOrder() {
+      const container = document.getElementById('selected-order');
+      if (!selectedCustomerId) {
+        container.innerHTML = '<p style="color:#aaa; text-align:center; padding:20px;">Select a customer to see their order</p>';
+        return;
+      }
+      const c = customers.find(x => x.id === selectedCustomerId);
+      if (!c) return;
+
+      container.innerHTML = `
+        <div style="font-weight:700; font-size:15px; margin-bottom:10px;">${c.emoji} ${c.name}</div>
+        ${c.order.map(item => {
+          let label = item.name;
+          if (item.hasOptions) {
+            const opts = [];
+            if (item.withRice) opts.push('+Rice');
+            if (item.withDrink) opts.push('+Drink');
+            if (opts.length) label += ` (${opts.join(', ')})`;
+          }
+          return `<div style="padding:4px 0;">${item.emoji} ${label} — ₱${item.finalPrice}</div>`;
+        }).join('')}
+        <div style="font-weight:700; margin-top:8px; padding-top:8px; border-top:1px solid #ddd;">Total: ₱${c.totalPrice}</div>
+      `;
+    }
+
+    // ========== COOKING SYSTEM ==========
+    function startCooking(name, emoji, basePrice, cookTime, hasOptions = false) {
+      const id = ++cookIdCounter;
+      
+      // Apply options if chicken
+      let finalPrice = basePrice;
+      let displayName = name;
+      let extras = [];
+      
+      if (hasOptions) {
+        const addRice = document.getElementById('opt-rice').checked;
+        const addDrink = document.getElementById('opt-drink').checked;
+        if (addRice) { finalPrice += 20; extras.push('+Rice'); }
+        if (addDrink) { finalPrice += 15; extras.push('+Drink'); }
+        if (extras.length) displayName += ` (${extras.join(', ')})`;
+        // Reset checkboxes
+        document.getElementById('opt-rice').checked = false;
+        document.getElementById('opt-drink').checked = false;
+      }
+
+      const item = {
+        id, name: displayName, baseName: name, emoji, price: finalPrice,
+        cookTime, startTime: Date.now(), hasOptions,
+        withRice: extras.includes('+Rice'),
+        withDrink: extras.includes('+Drink')
+      };
+
+      cookingItems.push(item);
+      renderCooking();
+      
+      // When done
+      setTimeout(() => {
+        const idx = cookingItems.findIndex(x => x.id === id);
+        if (idx !== -1) {
+          cookingItems.splice(idx, 1);
+          readyItems.push(item);
+          renderCooking();
+          renderReadyItems();
+          showMessage(`✅ ${item.name} is ready!`, 'success');
+        }
+      }, cookTime);
+    }
+
+    function renderCooking() {
+      const container = document.getElementById('cooking-queue');
+      if (cookingItems.length === 0) {
+        container.innerHTML = '<p style="color:#aaa; font-size:12px; text-align:center; padding:10px;">Nothing cooking...</p>';
+        return;
+      }
+
+      container.innerHTML = cookingItems.map(item => {
+        const elapsed = Date.now() - item.startTime;
+        const percent = Math.min(100, (elapsed / item.cookTime) * 100);
+        const remaining = Math.ceil((item.cookTime - elapsed) / 1000);
+        return `
+          <div class="cooking-item">
+            <span style="font-size:20px;">${item.emoji}</span>
+            <div style="flex:1;">
+              <div style="font-size:12px; font-weight:600;">${item.name}</div>
+              <div class="cooking-progress">
+                <div class="cook-fill" style="width:${percent}%;"></div>
+              </div>
+            </div>
+            <span style="font-size:11px; font-weight:700; color:var(--warning);">${remaining}s</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderReadyItems() {
+      const container = document.getElementById('ready-items');
+      if (readyItems.length === 0) {
+        container.innerHTML = `
+          <div style="font-weight:700; font-size:13px; color:var(--success); margin-bottom:6px;">✅ Ready — Click to Plate</div>
+          <p style="color:#aaa; font-size:12px; text-align:center; padding:5px;">Cook something first</p>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="font-weight:700; font-size:13px; color:var(--success); margin-bottom:6px;">✅ Ready — Click to Plate</div>
+        ${readyItems.map((item, idx) => `
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:#E8F8F5; border-radius:6px; margin-bottom:5px; cursor:pointer;" 
+               onclick="addToPlateFromReady(${idx})">
+            <span>${item.emoji} ${item.name}</span>
+            <span style="font-size:11px; font-weight:600;">₱${item.price}</span>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function addToPlateFromReady(index) {
+      const item = readyItems[index];
+      plateItems.push({
+        ...item,
+        plateId: Date.now() + Math.random()
+      });
+      readyItems.splice(index, 1);
+      renderReadyItems();
+      renderPlate();
     }
 
     // ========== PLATE MANAGEMENT ==========
-    function addToPlate(name, emoji, price) {
-      plateItems.push({ name, emoji, price, id: Date.now() + Math.random() });
-      renderPlate();
-    }
-
-    function addChickenToPlate(baseName) {
-      const addRice = document.getElementById('opt-rice').checked;
-      const addDrink = document.getElementById('opt-drink').checked;
-      let finalPrice = basePrices[baseName];
-      let label = baseName;
-      let extras = [];
-
-      if (addRice) { finalPrice += 20; extras.push('+Rice'); }
-      if (addDrink) { finalPrice += 15; extras.push('+Drink'); }
-      if (extras.length) label += ` (${extras.join(', ')})`;
-
-      plateItems.push({
-        name: label,
-        emoji: '🍗',
-        price: finalPrice,
-        id: Date.now() + Math.random()
-      });
-
-      renderPlate();
-      document.getElementById('opt-rice').checked = false;
-      document.getElementById('opt-drink').checked = false;
-    }
-
-    function removeFromPlate(id) {
-      plateItems = plateItems.filter(i => i.id !== id);
+    function removeFromPlate(plateId) {
+      plateItems = plateItems.filter(i => i.plateId !== plateId);
       renderPlate();
     }
 
     function clearPlate() {
+      // Optional: return unneeded items back to ready
       plateItems = [];
       selectedCustomerId = null;
       renderPlate();
       renderCustomers();
+      renderSelectedOrder();
     }
 
     function renderPlate() {
-      const plate = document.getElementById('plate');
-      const totalEl = document.getElementById('plate-total');
+      const plate = document.getElementById('prep-plate');
+      const totalEl = document.getElementById('prep-total');
       const serveBtn = document.getElementById('serve-btn');
       const total = plateItems.reduce((sum, i) => sum + i.price, 0);
 
       if (plateItems.length === 0) {
-        plate.innerHTML = '<div class="empty-plate">Click items from the menu to add them here</div>';
+        plate.innerHTML = '<div class="empty-plate">Ready items appear above — click to add here</div>';
         plate.classList.remove('has-items');
         serveBtn.disabled = true;
       } else {
@@ -809,9 +647,9 @@
         plate.innerHTML = plateItems.map(item => `
           <div class="plate-item">
             <span>${item.emoji} ${item.name}</span>
-            <div style="display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; align-items:center; gap:8px;">
               <span>₱${item.price}</span>
-              <button class="remove-btn" onclick="removeFromPlate(${item.id})">×</button>
+              <button class="remove-btn" onclick="removeFromPlate(${item.plateId})">×</button>
             </div>
           </div>
         `).join('');
@@ -824,48 +662,65 @@
     // ========== SERVE LOGIC ==========
     function serveOrder() {
       if (!selectedCustomerId || plateItems.length === 0) {
-        showMessage('Select a customer first & prepare their order!', 'error');
+        showMessage('Select a customer & cook their order first!', 'error');
         return;
       }
 
       const customer = customers.find(c => c.id === selectedCustomerId);
       if (!customer) return;
 
-      const plateNames = plateItems.map(i => i.name.replace(/\s\(.+\)/, '').trim());
-      const orderNames = customer.order.map(i => {
-        let base = i.name;
-        if (i.hasOptions) base = base.replace(/\s\(.+\)/, '');
-        return base;
-      });
+      // Match check: compare base names + options
+      const plateNames = plateItems.map(i => {
+        let base = i.baseName || i.name.replace(/\s\(.+\)/, '');
+        return base.trim();
+      }).sort();
 
-      const match = JSON.stringify([...plateNames].sort()) === JSON.stringify([...orderNames].sort());
+      const orderNames = customer.order.map(i => i.name.replace(/\s\(.+\)/, '').trim()).sort();
 
-      if (!match) {
+      // Also check options for chicken
+      let exactMatch = JSON.stringify(plateNames) === JSON.stringify(orderNames);
+      
+      if (exactMatch) {
+        // Double-check options match
+        for (const oItem of customer.order) {
+          if (!oItem.hasOptions) continue;
+          const pItem = plateItems.find(p => (p.baseName || p.name).includes(oItem.name.replace(/\s\(.+\)/, '')));
+          if (!pItem) { exactMatch = false; break; }
+          if (oItem.withRice !== pItem.withRice || oItem.withDrink !== pItem.withDrink) {
+            exactMatch = false; break;
+          }
+        }
+      }
+
+      if (!exactMatch) {
         showMessage('❌ Order does NOT match! Check the customer\'s order.', 'error');
         satisfaction = Math.max(0, satisfaction - 5);
         updateStats();
         return;
       }
 
-      // Payment & reward
+      // Success!
       const tip = customer.patience > 70 ? 0.1 * customer.totalPrice : customer.patience > 40 ? 0.05 * customer.totalPrice : 0;
       const earned = customer.totalPrice + tip;
       money += earned;
       servedCount++;
       satisfaction = Math.min(100, satisfaction + (customer.patience > 70 ? 5 : 2));
 
-      // Remove with animation
       const custName = customer.name;
-      animateCustomerLeave(customer, true);
+      animateCustomerLeave(true);
       customers = customers.filter(c => c.id !== selectedCustomerId);
 
-      showMessage(`✅ ${custName} left happy! +₱${earned.toFixed(2)} ${tip > 0 ? '(incl. tip!)' : ''}`, 'success');
+      showMessage(`✅ Served ${custName}! +₱${earned.toFixed(2)} ${tip > 0 ? '(incl. tip!)' : ''}`, 'success');
 
-      clearPlate();
+      plateItems = [];
+      selectedCustomerId = null;
+      renderPlate();
+      renderCustomers();
+      renderSelectedOrder();
       updateStats();
     }
 
-    // ========== SYSTEM ==========
+    // ========== SYSTEM LOOPS ==========
     function updateStats() {
       document.getElementById('money').textContent = `₱${money.toFixed(2)}`;
       document.getElementById('satisfaction').textContent = `${satisfaction}%`;
@@ -877,10 +732,15 @@
       const el = document.getElementById('message');
       el.textContent = text;
       el.className = 'message show ' + type;
-      setTimeout(() => el.classList.remove('show'), 2500);
+      setTimeout(() => el.classList.remove('show'), 3000);
     }
 
-    // Patience decay & auto-remove
+    // Update cooking progress every second
+    setInterval(() => {
+      if (cookingItems.length > 0) renderCooking();
+    }, 100);
+
+    // Patience decay
     setInterval(() => {
       if (customers.length === 0) return;
 
@@ -891,28 +751,31 @@
 
       renderCustomers();
 
-      // Auto-remove impatient customers
       const impatient = customers.filter(c => c.patience <= 0);
       if (impatient.length > 0) {
         impatient.forEach(c => {
-          animateCustomerLeave(c, false);
+          animateCustomerLeave(false);
           showMessage(`😢 ${c.name} left impatiently!`, 'error');
         });
         satisfaction = Math.max(0, satisfaction - impatient.length * 10);
       }
       customers = customers.filter(c => c.patience > 0);
-      renderCustomers();
+      
+      if (selectedCustomerId && !customers.find(c => c.id === selectedCustomerId)) {
+        selectedCustomerId = null;
+        renderSelectedOrder();
+      }
     }, 1000);
 
     // Auto-spawn customers
     setInterval(() => {
-      if (customers.length < 4 && Math.random() > 0.6) {
+      if (customers.length < 4 && Math.random() > 0.65) {
         addCustomer();
       }
-    }, 8000);
+    }, 10000);
 
     window.onload = () => {
-      showMessage('🍔 Welcome! Customers will walk in — serve them fast!', 'success');
+      showMessage('🍔 Welcome! Click food in Cooking Station to start!', 'success');
     };
   </script>
 </body>
