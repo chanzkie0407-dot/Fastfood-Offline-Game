@@ -11,7 +11,6 @@
       box-sizing: border-box;
       font-family: 'Segoe UI', sans-serif;
     }
-
     :root {
       --primary: #E63946;
       --secondary: #FFB703;
@@ -20,19 +19,19 @@
       --success: #2A9D8F;
       --warning: #FF9F1C;
       --danger: #E63946;
+      --floor: #F5E6D3;
+      --door: #8B4513;
     }
-
     body {
       background: linear-gradient(135deg, #F1FAEE 0%, #A8DADC 100%);
       min-height: 100vh;
       padding: 10px;
+      overflow-x: hidden;
     }
-
     .game-container {
       max-width: 1200px;
       margin: 0 auto;
     }
-
     /* ===== HEADER / STATS ===== */
     .header {
       background: var(--accent);
@@ -46,113 +45,157 @@
       gap: 10px;
       margin-bottom: 15px;
     }
-
     .stat {
       text-align: center;
     }
-
     .stat-label {
       font-size: 11px;
       opacity: 0.8;
       text-transform: uppercase;
     }
-
     .stat-value {
       font-size: 20px;
       font-weight: 700;
     }
-
     .money { color: var(--secondary); }
     .satisfaction { color: var(--success); }
-
-    /* ===== CUSTOMER AREA ===== */
-    .customer-area {
-      background: white;
+    /* ===== RESTAURANT FLOOR / WALKING AREA ===== */
+    .restaurant-scene {
+      background: var(--floor);
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      min-height: 180px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+      position: relative;
+      min-height: 280px;
+      overflow: hidden;
     }
-
+    .door {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      height: 90px;
+      background: var(--door);
+      border-radius: 4px 4px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: inset -4px 0 8px rgba(0,0,0,0.3);
+    }
+    .door::after {
+      content: '';
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      background: var(--secondary);
+      border-radius: 50%;
+    }
+    .queue-zone {
+      position: absolute;
+      top: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
     .section-title {
       font-size: 16px;
       font-weight: 700;
       color: var(--accent);
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
     }
-
-    .customer-queue {
-      display: flex;
-      gap: 15px;
-      overflow-x: auto;
-      padding-bottom: 10px;
+    /* ===== WALKING CUSTOMER ===== */
+    .walking-customer {
+      position: absolute;
+      font-size: 36px;
+      transition: all 0.8s ease-in-out;
+      z-index: 10;
+      filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
     }
-
+    .walking-customer.walking {
+      animation: walk 0.3s infinite alternate;
+    }
+    @keyframes walk {
+      0% { transform: translateY(0) rotate(-3deg); }
+      100% { transform: translateY(-4px) rotate(3deg); }
+    }
+    .walking-customer.leaving {
+      animation: walkAway 0.8s ease-in forwards;
+    }
+    @keyframes walkAway {
+      0% { opacity: 1; }
+      100% { transform: translateX(-150px); opacity: 0; }
+    }
+    /* ===== CUSTOMER CARD ===== */
     .customer-card {
-      min-width: 220px;
-      background: var(--light);
+      min-width: 200px;
+      background: white;
       border-radius: 12px;
-      padding: 15px;
-      border-left: 4px solid var(--primary);
+      padding: 12px;
+      border: 3px solid transparent;
       transition: all 0.3s ease;
-      position: relative;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
-
+    .customer-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+    .customer-card.selected {
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.3);
+    }
     .customer-card.waiting { border-left-color: var(--warning); }
-    .customer-card.ready { border-left-color: var(--success); background: #E8F8F5; }
-    .customer-card.impatient { border-left-color: var(--danger); animation: shake 0.5s infinite; }
-
+    .customer-card.impatient { border-left: 4px solid var(--danger); animation: shake 0.5s infinite; }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-3px); }
       75% { transform: translateX(3px); }
     }
-
-    .customer-emoji { font-size: 32px; }
-    .customer-name { font-weight: 600; margin: 5px 0; }
+    .card-emoji { font-size: 28px; }
+    .customer-name { font-weight: 700; margin: 4px 0; font-size: 15px; }
     .patience-bar {
       height: 6px;
-      background: #ddd;
+      background: #eee;
       border-radius: 3px;
-      margin: 8px 0;
+      margin: 6px 0;
       overflow: hidden;
     }
     .patience-fill {
       height: 100%;
-      background: var(--success);
       width: 100%;
       transition: width 1s linear, background 0.3s;
+      border-radius: 3px;
     }
-    .order-items { font-size: 12px; margin-top: 8px; line-height: 1.5; }
-    .order-item { display: flex; justify-content: space-between; padding: 2px 0; }
-
+    .order-items { font-size: 11px; margin-top: 6px; line-height: 1.4; }
+    .order-item { display: flex; justify-content: space-between; padding: 1px 0; }
     /* ===== KITCHEN / MENU ===== */
     .kitchen {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 15px;
     }
-
     @media (max-width: 768px) {
       .kitchen { grid-template-columns: 1fr; }
     }
-
     .menu-panel, .plate-panel {
       background: white;
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-
     .menu-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 10px;
     }
-
     .food-btn {
       display: flex;
       flex-direction: column;
@@ -164,17 +207,14 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-
     .food-btn:hover {
       border-color: var(--secondary);
       transform: translateY(-2px);
       box-shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
-
     .food-btn .emoji { font-size: 28px; }
     .food-btn .name { font-size: 10px; text-align: center; margin-top: 4px; }
     .food-btn .price { font-size: 9px; color: var(--success); font-weight: 600; margin-top: 2px; }
-
     .category-title {
       font-size: 13px;
       font-weight: 700;
@@ -183,7 +223,6 @@
       padding-bottom: 4px;
       border-bottom: 2px solid #eee;
     }
-
     /* ===== PLATE / ORDER BUILDER ===== */
     .plate {
       min-height: 150px;
@@ -191,10 +230,9 @@
       border-radius: 12px;
       padding: 15px;
       margin-bottom: 15px;
+      transition: all 0.3s;
     }
-
     .plate.has-items { border-color: var(--success); background: #FAFFFA; }
-
     .plate-item {
       display: flex;
       justify-content: space-between;
@@ -204,7 +242,6 @@
       border-radius: 6px;
       margin-bottom: 6px;
     }
-
     .remove-btn {
       background: var(--danger);
       color: white;
@@ -219,7 +256,6 @@
       align-items: center;
       justify-content: center;
     }
-
     .plate-total {
       text-align: right;
       font-size: 18px;
@@ -227,12 +263,10 @@
       color: var(--accent);
       margin-bottom: 12px;
     }
-
     .action-buttons {
       display: flex;
       gap: 10px;
     }
-
     .btn {
       flex: 1;
       padding: 14px;
@@ -243,22 +277,17 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-
     .btn-serve {
       background: var(--success);
       color: white;
     }
-
     .btn-serve:hover { background: #21867C; }
     .btn-serve:disabled { background: #ccc; cursor: not-allowed; }
-
     .btn-clear {
       background: #eee;
       color: #666;
     }
-
     .btn-clear:hover { background: #ddd; }
-
     /* ===== OPTIONS (Chicken) ===== */
     .options-row {
       display: flex;
@@ -266,7 +295,6 @@
       margin: 8px 0 15px;
       flex-wrap: wrap;
     }
-
     .option-checkbox {
       display: flex;
       align-items: center;
@@ -276,7 +304,6 @@
       padding: 6px 10px;
       border-radius: 6px;
     }
-
     /* ===== MESSAGE / FEEDBACK ===== */
     .message {
       position: fixed;
@@ -293,15 +320,19 @@
       transition: opacity 0.3s;
       pointer-events: none;
     }
-
     .message.show { opacity: 1; }
     .message.success { background: var(--success); }
     .message.error { background: var(--danger); }
-
     .empty-plate {
       text-align: center;
       color: #aaa;
       padding: 30px;
+      font-size: 14px;
+    }
+    .empty-queue {
+      color: #aaa;
+      text-align: center;
+      padding: 20px;
       font-size: 14px;
     }
   </style>
@@ -328,14 +359,15 @@
       </div>
     </div>
 
-    <!-- Customers Area -->
-    <div class="customer-area">
-      <div class="section-title">
-        👥 Customers
+    <!-- Restaurant Scene with Walking Animation -->
+    <div class="restaurant-scene" id="restaurant-scene">
+      <div class="door">🚪</div>
+      <div class="section-title" style="padding:0 10px;">
+        👥 Customers — Click to Select
         <button style="font-size:12px; padding:4px 10px; background:var(--secondary); border:none; border-radius:6px; cursor:pointer; font-weight:600;" onclick="addCustomer()">+ Add Customer</button>
       </div>
-      <div class="customer-queue" id="customer-queue">
-        <p style="color:#aaa; width:100%; text-align:center; padding:20px;">Waiting for customers...</p>
+      <div class="queue-zone" id="queue-zone">
+        <p class="empty-queue" id="empty-queue">Waiting for customers to enter...</p>
       </div>
     </div>
 
@@ -531,33 +563,28 @@
     };
 
     const customerNames = ['Alex', 'Sarah', 'Mark', 'Jenny', 'John', 'Lisa', 'Mike', 'Anna', 'Jay', 'Mae', 'Sam', 'Joy'];
-    const customerEmojis = ['🙂', '😊', '😐', '🙂', '😃', '😄', '😁', '🙋', '🧑', '👨', '👩', '👧', '👦'];
+    const customerEmojis = ['🙂', '😊', '😐', '🙂', '😃', '😄', '😁', '🙋', '🧑', '👨', '👩', '👧', '👦', '🧑‍🦰', '👩‍🦱', '👨‍🦱'];
 
     // Order templates
     const menuItems = [
-      // Burgers
       { name: 'Classic Burger', price: 85 },
       { name: 'Cheese Burger', price: 95 },
       { name: 'Double Burger', price: 120 },
       { name: 'Bacon Burger', price: 135 },
       { name: 'Supreme Burger', price: 150 },
-      // Pizza
       { name: 'Cheese Pizza', price: 190 },
       { name: 'Pepperoni Pizza', price: 210 },
       { name: 'Hawaiian Pizza', price: 220 },
       { name: 'Meat Lovers Pizza', price: 250 },
       { name: 'Veggie Pizza', price: 200 },
-      // Chicken
       { name: '1pc Chicken', price: 70, hasOptions: true },
       { name: '2pc Chicken', price: 110, hasOptions: true },
       { name: '3pc Chicken', price: 150, hasOptions: true },
       { name: 'Chicken Burger Steak', price: 95, hasOptions: true },
       { name: 'Chicken Wings', price: 130, hasOptions: true },
-      // Fries
       { name: 'Small Fries', price: 45 },
       { name: 'Medium Fries', price: 65 },
       { name: 'Large Fries', price: 85 },
-      // Ice Cream
       { name: 'Vanilla Ice Cream', price: 40 },
       { name: 'Chocolate Ice Cream', price: 45 },
       { name: 'Strawberry Ice Cream', price: 45 },
@@ -568,12 +595,11 @@
     // ========== CUSTOMER GENERATION ==========
     function generateOrder() {
       const order = [];
-      const numItems = Math.floor(Math.random() * 3) + 1; // 1-3 items
+      const numItems = Math.floor(Math.random() * 3) + 1;
 
       for (let i = 0; i < numItems; i++) {
         const catRoll = Math.random();
         let categoryItems;
-
         if (catRoll < 0.25) {
           categoryItems = menuItems.filter(i => i.name.includes('Burger'));
         } else if (catRoll < 0.45) {
@@ -589,7 +615,6 @@
         const item = categoryItems[Math.floor(Math.random() * categoryItems.length)];
         const orderItem = { ...item };
 
-        // Random options for chicken
         if (item.hasOptions) {
           orderItem.withRice = Math.random() > 0.5;
           orderItem.withDrink = Math.random() > 0.5;
@@ -597,11 +622,56 @@
         } else {
           orderItem.finalPrice = item.price;
         }
-
         order.push(orderItem);
       }
-
       return order;
+    }
+
+    // ========== WALKING ANIMATION ==========
+    function animateCustomerEnter(customer) {
+      const scene = document.getElementById('restaurant-scene');
+      
+      // Create walking figure
+      const walker = document.createElement('div');
+      walker.className = 'walking-customer walking';
+      walker.id = `walker-${customer.id}`;
+      walker.textContent = customer.emoji;
+      walker.style.left = '-50px';
+      walker.style.top = '30px';
+      scene.appendChild(walker);
+
+      // Animate entering
+      setTimeout(() => {
+        walker.style.left = '120px';
+      }, 50);
+
+      // After walk, remove walker and show card
+      setTimeout(() => {
+        walker.classList.remove('walking');
+        walker.style.opacity = '0';
+        setTimeout(() => walker.remove(), 300);
+        renderCustomers();
+      }, 1000);
+    }
+
+    function animateCustomerLeave(customer, happy = true) {
+      const queueZone = document.getElementById('queue-zone');
+      
+      // Create leaving figure from card position
+      const walker = document.createElement('div');
+      walker.className = `walking-customer ${happy ? '' : 'impatient'}`;
+      walker.textContent = happy ? '😊👋' : '😤🏃';
+      walker.style.right = '20px';
+      walker.style.top = '30px';
+      walker.style.opacity = '1';
+      document.getElementById('restaurant-scene').appendChild(walker);
+
+      setTimeout(() => {
+        walker.style.transform = 'translateX(100px)';
+        walker.style.opacity = '0';
+      }, 100);
+
+      setTimeout(() => walker.remove(), 1000);
     }
 
     function addCustomer() {
@@ -622,25 +692,25 @@
       };
 
       customers.push(customer);
-      renderCustomers();
+      animateCustomerEnter(customer);
       showMessage(`${name} entered the restaurant!`, 'success');
     }
 
-    // ========== RENDER CUSTOMERS ==========
+    // ========== RENDER CUSTOMER CARDS ==========
     function renderCustomers() {
-      const container = document.getElementById('customer-queue');
-      
+      const container = document.getElementById('queue-zone');
+      const emptyMsg = document.getElementById('empty-queue');
+
       if (customers.length === 0) {
-        container.innerHTML = '<p style="color:#aaa; width:100%; text-align:center; padding:20px;">Waiting for customers...</p>';
+        container.innerHTML = '<p class="empty-queue">Waiting for customers to enter...</p>';
         updateStats();
         return;
       }
 
       container.innerHTML = customers.map(c => {
-        const patiencePercent = c.patience;
-        let statusClass = 'waiting';
+        const patiencePercent = Math.max(0, c.patience);
+        let statusClass = '';
         if (patiencePercent < 30) statusClass = 'impatient';
-        else if (patiencePercent < 60) statusClass = 'waiting';
 
         const patienceColor = patiencePercent > 60 ? '#2A9D8F' : patiencePercent > 30 ? '#FF9F1C' : '#E63946';
 
@@ -655,18 +725,18 @@
           return `<div class="order-item"><span>${label}</span><span>₱${item.finalPrice}</span></div>`;
         }).join('');
 
-        const isSelected = selectedCustomerId === c.id ? 'style="box-shadow:0 0 0 3px var(--secondary);"' : '';
+        const isSelected = selectedCustomerId === c.id ? 'selected' : '';
 
         return `
-          <div class="customer-card ${statusClass}" ${isSelected} onclick="selectCustomer(${c.id})">
-            <div class="customer-emoji">${c.emoji}</div>
+          <div class="customer-card ${statusClass} ${isSelected}" onclick="selectCustomer(${c.id})">
+            <div class="card-emoji">${c.emoji}</div>
             <div class="customer-name">${c.name}</div>
             <div class="patience-bar">
               <div class="patience-fill" style="width:${patiencePercent}%; background:${patienceColor};"></div>
             </div>
             <div class="order-items">
               ${orderList}
-              <div class="order-item" style="font-weight:700; margin-top:6px; border-top:1px solid #ddd; padding-top:6px;">
+              <div class="order-item" style="font-weight:700; margin-top:4px; border-top:1px solid #eee; padding-top:4px;">
                 <span>TOTAL</span><span>₱${c.totalPrice}</span>
               </div>
             </div>
@@ -708,7 +778,6 @@
       });
 
       renderPlate();
-      // Reset checkboxes
       document.getElementById('opt-rice').checked = false;
       document.getElementById('opt-drink').checked = false;
     }
@@ -732,7 +801,7 @@
       const total = plateItems.reduce((sum, i) => sum + i.price, 0);
 
       if (plateItems.length === 0) {
-        plate.innerHTML = '<div class="empty-plate" id="empty-msg">Click items from the menu to add them here</div>';
+        plate.innerHTML = '<div class="empty-plate">Click items from the menu to add them here</div>';
         plate.classList.remove('has-items');
         serveBtn.disabled = true;
       } else {
@@ -762,10 +831,6 @@
       const customer = customers.find(c => c.id === selectedCustomerId);
       if (!customer) return;
 
-      const plateTotal = plateItems.reduce((sum, i) => sum + i.price, 0);
-      const orderTotal = customer.totalPrice;
-
-      // Simple match check: compare item names ignoring extras
       const plateNames = plateItems.map(i => i.name.replace(/\s\(.+\)/, '').trim());
       const orderNames = customer.order.map(i => {
         let base = i.name;
@@ -773,7 +838,6 @@
         return base;
       });
 
-      // Sort and compare
       const match = JSON.stringify([...plateNames].sort()) === JSON.stringify([...orderNames].sort());
 
       if (!match) {
@@ -784,20 +848,19 @@
       }
 
       // Payment & reward
-      const tip = customer.patience > 70 ? 0.1 * orderTotal : customer.patience > 40 ? 0.05 * orderTotal : 0;
-      const earned = orderTotal + tip;
+      const tip = customer.patience > 70 ? 0.1 * customer.totalPrice : customer.patience > 40 ? 0.05 * customer.totalPrice : 0;
+      const earned = customer.totalPrice + tip;
       money += earned;
       servedCount++;
-
-      // Satisfaction boost
       satisfaction = Math.min(100, satisfaction + (customer.patience > 70 ? 5 : 2));
 
-      // Remove customer
+      // Remove with animation
+      const custName = customer.name;
+      animateCustomerLeave(customer, true);
       customers = customers.filter(c => c.id !== selectedCustomerId);
 
-      showMessage(`✅ Served! +₱${earned.toFixed(2)} ${tip > 0 ? '(incl. tip!)' : ''}`, 'success');
+      showMessage(`✅ ${custName} left happy! +₱${earned.toFixed(2)} ${tip > 0 ? '(incl. tip!)' : ''}`, 'success');
 
-      // Reset
       clearPlate();
       updateStats();
     }
@@ -817,20 +880,25 @@
       setTimeout(() => el.classList.remove('show'), 2500);
     }
 
-    // Patience decay loop
+    // Patience decay & auto-remove
     setInterval(() => {
       if (customers.length === 0) return;
+
       customers.forEach(c => {
         const waitTime = (Date.now() - c.arrivedAt) / 1000;
         c.patience = Math.max(0, 100 - waitTime / 3);
       });
+
       renderCustomers();
 
-      // Auto-remove fully impatient customers
-      const left = customers.filter(c => c.patience <= 0);
-      if (left.length > 0) {
-        left.forEach(c => showMessage(`😢 ${c.name} left impatiently!`, 'error'));
-        satisfaction = Math.max(0, satisfaction - left.length * 10);
+      // Auto-remove impatient customers
+      const impatient = customers.filter(c => c.patience <= 0);
+      if (impatient.length > 0) {
+        impatient.forEach(c => {
+          animateCustomerLeave(c, false);
+          showMessage(`😢 ${c.name} left impatiently!`, 'error');
+        });
+        satisfaction = Math.max(0, satisfaction - impatient.length * 10);
       }
       customers = customers.filter(c => c.patience > 0);
       renderCustomers();
@@ -843,9 +911,8 @@
       }
     }, 8000);
 
-    // Initial welcome
     window.onload = () => {
-      showMessage('🍔 Welcome! Click "+ Add Customer" to start!', 'success');
+      showMessage('🍔 Welcome! Customers will walk in — serve them fast!', 'success');
     };
   </script>
 </body>
